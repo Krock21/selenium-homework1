@@ -1,6 +1,7 @@
 package org.example;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -18,6 +19,7 @@ public class Users {
 
     public static void open(WebDriver driver, String baseURL) {
         driver.get(baseURL + "/users");
+        (new WebDriverWait(driver, 2)).until(ExpectedConditions.elementToBeClickable(By.className("ring-menu__logo__img")));
     }
 
     public static void open(WebDriver driver) {
@@ -40,18 +42,39 @@ public class Users {
 
     public static boolean createUser(WebDriver driver, String login, String password, String confirmPassword) {
         WebDriverWait wait = new WebDriverWait(driver, 2);
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("id_l.U.createNewUser")));
-        driver.findElement(By.id("id_l.U.createNewUser")).click();
-        wait.until(ExpectedConditions.elementToBeClickable(By.id("id_l.U.cr.login")));
-        driver.findElement(By.id("id_l.U.cr.login")).sendKeys(login);
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("id_l.U.createNewUser"))).click();
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("id_l.U.cr.login"))).sendKeys(login);
         driver.findElement(By.id("id_l.U.cr.password")).sendKeys(password);
         driver.findElement(By.id("id_l.U.cr.confirmPassword")).sendKeys(confirmPassword);
         driver.findElement(By.id("id_l.U.cr.createUserOk")).click();
         try {
-            wait.until(ExpectedConditions.elementToBeClickable(By.id("id_l.E.AdminBreadcrumb.AdminBreadcrumb")));
-            return driver.findElement(By.id("id_l.E.AdminBreadcrumb.AdminBreadcrumb")).isDisplayed(); // true or exception
-        } catch (Exception e) {
-            throw new IllegalArgumentException(e.getMessage());
+            return wait.until(ExpectedConditions.presenceOfElementLocated(By.id("id_l.E.AdminBreadcrumb.AdminBreadcrumb"))) != null;
+        } catch (TimeoutException exception) {
+            WebDriverWait errorsWait = new WebDriverWait(driver, 1);
+            try {
+                errorsWait.until(
+                        ExpectedConditions.presenceOfElementLocated(
+                                By.className("error-bulb2")
+                        )
+                ).click();
+                throw new IllegalArgumentException(
+                        errorsWait.until(
+                                ExpectedConditions.presenceOfElementLocated(
+                                        By.className("error-tooltip")
+                                )
+                        ).getText());
+            } catch (TimeoutException bulb2NotFound) {
+                try {
+                    throw new IllegalArgumentException(
+                            errorsWait.until(
+                                    ExpectedConditions.presenceOfElementLocated(
+                                            By.className("errorSeverity")
+                                    )
+                            ).getText());
+                } catch (TimeoutException errorSeverityNotFound) {
+                    throw new IllegalArgumentException("unexpected error");
+                }
+            }
         }
     }
 
@@ -63,19 +86,19 @@ public class Users {
         } else {
             WebElement user = users.get(0);
             String userId = user.getAttribute("id").substring("id_l.U.usersList.UserLogin.editUser".length()); // _aa_bb
-            String deleteID = "id_l.U.usersList.deleteUser" + userId + "_" + login;
+            String deleteID = "id_l.U.usersList.deleteUser" + userId + "_" + login.replace('-', '_');
             WebDriverWait wait = new WebDriverWait(driver, 2);
             try {
                 wait.until(ExpectedConditions.elementToBeClickable(By.id(deleteID)));
                 WebElement deleteA = driver.findElement(By.id(deleteID));
                 deleteA.click();
                 driver.switchTo().alert().accept();
-                driver.switchTo().defaultContent();
+                return wait.until(ExpectedConditions.elementToBeClickable(By.className("message")))
+                        .findElement(By.xpath("//table/tbody/tr/td[2]/ul/li")).getText().equals("User "+ login +" deleted.");
             } catch (Exception e) {
                 System.out.println("Cannot find \"delete\" button");
                 throw new IllegalArgumentException(e.getMessage());
             }
         }
-        return true;
     }
 }
