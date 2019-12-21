@@ -39,72 +39,72 @@ class UsersTest {
 
     @Test
     void createAndDeleteNewUser() {
-        driver.get("http:/localhost:8080/users");
+        Users.open(driver);
         String newUserName = getNewUserName(driver);
 
-        driver.get("http://localhost:8080/users");
+        Users.open(driver);
         assertFalse(Users.loadUsers(driver).contains(newUserName));
 
-        driver.get("http://localhost:8080/users");
+        Users.open(driver);
         assertTrue(Users.createUser(driver, newUserName, newUserName, newUserName));
 
-        driver.get("http://localhost:8080/users");
+        Users.open(driver);
         assertTrue(Users.loadUsers(driver).contains(newUserName));
 
-        driver.get("http://localhost:8080/users");
+        Users.open(driver);
         assertTrue(Users.deleteUser(driver, newUserName));
 
-        driver.get("http://localhost:8080/users");
+        Users.open(driver);
         assertFalse(Users.loadUsers(driver).contains(newUserName));
 
-        driver.get("http://localhost:8080/users");
+        Users.open(driver);
         assertTrue(Users.createUser(driver, newUserName, "a", "a"));
 
-        driver.get("http://localhost:8080/users");
+        Users.open(driver);
         assertTrue(Users.loadUsers(driver).contains(newUserName));
 
-        driver.get("http://localhost:8080/users");
+        Users.open(driver);
         assertTrue(Users.deleteUser(driver, newUserName));
 
-        driver.get("http://localhost:8080/users");
+        Users.open(driver);
         assertFalse(Users.loadUsers(driver).contains(newUserName));
     }
 
 
     @Test
     void checkPassword() {
-        driver.get("http:/localhost:8080/users");
+        Users.open(driver);
         String newUserName = getNewUserName(driver);
 
-        driver.get("http://localhost:8080/users");
+        Users.open(driver);
         assertFalse(Users.loadUsers(driver).contains(newUserName));
 
-        driver.get("http://localhost:8080/users");
+        Users.open(driver);
         assertThrows(IllegalArgumentException.class, () -> Users.createUser(driver, newUserName, newUserName, newUserName + "a"));
 
-        driver.get("http://localhost:8080/users");
+        Users.open(driver);
         assertFalse(Users.loadUsers(driver).contains(newUserName));
 
-        driver.get("http://localhost:8080/users");
+        Users.open(driver);
         assertThrows(IllegalArgumentException.class, () -> Users.createUser(driver, newUserName, "", ""));
 
-        driver.get("http://localhost:8080/users");
+        Users.open(driver);
         assertFalse(Users.loadUsers(driver).contains(newUserName));
     }
 
     @Test
     void checkEmptyLogin() {
-        driver.get("http://localhost:8080/users");
+        Users.open(driver);
         assertThrows(IllegalArgumentException.class, () -> Users.createUser(driver, "", "abc", "abc"));
     }
 
     @Test
     void checkLogins() {
-        driver.get("http://localhost:8080/users");
+        Users.open(driver);
         List<String> users = Users.loadUsers(driver);
 
         for(String user : users) {
-            driver.get("http://localhost:8080/users");
+            Users.open(driver);
             assertThrows(IllegalArgumentException.class, () -> Users.createUser(driver, user, "abc", "abc"));
         }
     }

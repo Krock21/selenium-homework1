@@ -10,7 +10,18 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 public class Users {
+
+    final String defaultBaseURL = "http://localhost:8080";
+
     private Users() {
+    }
+
+    public static void open(WebDriver driver, String baseURL) {
+        driver.get(baseURL + "/users");
+    }
+
+    public static void open(WebDriver driver) {
+        open(driver, "http://localhost:8080");
     }
 
     public static void loginIntoRoot(WebDriver driver, String rootPassword) {
